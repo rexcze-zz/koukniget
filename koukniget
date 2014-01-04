@@ -13,7 +13,7 @@ VID=`echo ${URL}|awk -F/ '{print $4}'`
 #GET first number in videos
 FNUM=`echo ${VID}|cut -c1-1`
 #GET video name from webpage
-ONAME=`wget -q https://koukni.cz/72776985 -O -|egrep "*<title>.*</title>"|sed 's/<\/title>//'|awk -F'.CZ - ' '{print $2}'|sed -e 's/\s/./g'`
+ONAME=`wget -q ${URL} -O -|egrep "*<title>.*</title>"|sed 's/<\/title>//'|awk -F'.CZ - ' '{print $2}'|sed -e 's/\s/./g'`
 
 
 echo "Ulozit jako[${ONAME}]:"
