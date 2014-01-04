@@ -1,0 +1,36 @@
+#!/bin/bash
+#https://koukni.cz/12356453
+
+if [ -z ${1} ];then
+        echo "Zadejte cestu k videu (napr. https://koukni.cz/12356453)"
+        read URL
+else
+        URL=${1}
+fi
+
+#GET video number ID
+VID=`echo ${URL}|awk -F/ '{print $4}'`
+#GET first number in videos
+FNUM=`echo ${VID}|cut -c1-1`
+#GET video name from webpage
+ONAME=`wget -q https://koukni.cz/72776985 -O -|egrep "*<title>.*</title>"|sed 's/<\/title>//'|awk -F'.CZ - ' '{print $2}'|sed -e 's/\s/./g'`
+
+
+echo "Ulozit jako[${ONAME}]:"
+read USERIN
+if [ ! -z "${USERIN}" ];then
+        ONAME="${USERIN}"
+fi
+
+#stahneme zadane video
+wget --spider -q https://koukni.cz/${FNUM}/${VID}.mp4
+if [ ${?} != 0 ]; then
+        echo "Video na zadanem URL nebylo nalezeno"                                                                                                                
+else                                                                                                                                                               
+        wget https://koukni.cz/${FNUM}/${VID}.mp4 -O ./${ONAME}.mp4                                                                                                
+        #pokud existuji titulky, stahneme                                                                                                                          
+        wget --spider https://koukni.cz/SRT/${VID}.srt -q                                                                                                          
+        if [ ${?} == 0 ]; then                                                                                                                                     
+                wget https://koukni.cz/SRT/${VID}.srt -O ./${ONAME}.srt
+        fi
+fi
