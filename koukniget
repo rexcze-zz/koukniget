@@ -26,11 +26,14 @@ fi
 wget --spider -q https://koukni.cz/${FNUM}/${VID}.mp4
 if [ $? != 0 ]; then
         echo "Video na zadanem URL nebylo nalezeno"                                                                                                                
-else                                                                                                                                                               
-        wget https://koukni.cz/${FNUM}/${VID}.mp4 -O ./${ONAME}.mp4                                                                                                
+else     
+	#nejdrive titulky, pak video                                                                                                                                                          
         #pokud existuji titulky, stahneme                                                                                                                          
         wget --spider https://koukni.cz/SRT/${VID}.srt -q                                                                                                          
-        if [ $? == 0 ]; then                                                                                                                                     
+        if [ $? -eq 0 ]; then                                                                                                                                     
                 wget https://koukni.cz/SRT/${VID}.srt -O ./${ONAME}.srt
         fi
+	#stahneme video
+        wget https://koukni.cz/${FNUM}/${VID}.mp4 -O ./${ONAME}.mp4                                                                                                
+
 fi
