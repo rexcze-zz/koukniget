@@ -13,7 +13,7 @@ VID=`echo ${URL}|awk -F/ '{print $4}'`
 #GET first number in videos
 FNUM=`echo ${VID}|cut -c1-1`
 #GET video name from webpage
-ONAME=`wget -q ${URL} -O -|egrep "*<title>.*</title>"|sed 's/<\/title>//'|awk -F'.CZ - ' '{print $2}'|sed -e 's/\s/./g'`
+ONAME=`wget --no-check-certificate -q ${URL} -O -|egrep "*<title>.*</title>"|sed 's/<\/title>//'|awk -F'.CZ - ' '{print $2}'|sed -e 's/\s/./g'`
 
 
 echo "Ulozit jako[${ONAME}]:"
@@ -23,17 +23,17 @@ if [ ! -z "${USERIN}" ];then
 fi
 
 #stahneme zadane video
-wget --spider -q https://koukni.cz/${FNUM}/${VID}.mp4
+wget --no-check-certificate --spider -q https://koukni.cz/${FNUM}/${VID}.mp4
 if [ $? != 0 ]; then
         echo "Video na zadanem URL nebylo nalezeno"                                                                                                                
 else     
-	#nejdrive titulky, pak video                                                                                                                                                          
+        #nejdrive titulky, pak video                                                                                                                                                          
         #pokud existuji titulky, stahneme                                                                                                                          
-        wget --spider https://koukni.cz/SRT/${VID}.srt -q                                                                                                          
+        wget --no-check-certificate --spider https://koukni.cz/SRT/${VID}.srt -q                                                                                                          
         if [ $? -eq 0 ]; then                                                                                                                                     
-                wget https://koukni.cz/SRT/${VID}.srt -O ./${ONAME}.srt
+                wget --no-check-certificate https://koukni.cz/SRT/${VID}.srt -O ./${ONAME}.srt
         fi
-	#stahneme video
-        wget https://koukni.cz/${FNUM}/${VID}.mp4 -O ./${ONAME}.mp4                                                                                                
+        #stahneme video
+        wget --no-check-certificate https://koukni.cz/${FNUM}/${VID}.mp4 -O ./${ONAME}.mp4                                                                                                
 
 fi
