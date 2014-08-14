@@ -1,6 +1,76 @@
 #!/bin/bash
 #https://koukni.cz/12356453
 
+
+###HLEDANI
+
+function hledani {
+##argumentem je hledany text, napriklad homeland
+
+        VYRAZ=${1}
+
+        SEZNAM=`wget --no-check-certificate https://koukni.cz/hledej?hledej=${VYRAZ} -q -O - |grep pics|sed 's/[^0-9]*//g'`
+        for POLOZKA in ${SEZNAM}; do
+                getName "https://koukni.cz/${POLOZKA}"
+                echo "https://koukni.cz/${POLOZKA}"
+                stahnifilm ${POLOZKA}
+        done
+
+}
+##stahovani filmu, argument je cislo filmu ($VID)
+function stahnifilm {
+
+        VID=${1}
+        PURL="https://koukni.cz/${VID}"
+        #GET first number in videos
+        FNUM=`echo ${VID}|cut -c1-1`
+        URL="https://koukni.cz/${FNUM}/${VID}.mp4"
+
+        ONAME=`getName ${PURL}`
+        echo "Ulozit jako[${ONAME}]:"
+#       read USERIN
+#       if [ ! -z "${USERIN}" ];then
+#               ONAME="${USERIN}"
+#       fi
+
+        #stahneme zadane video
+        wget --no-check-certificate --spider -q https://koukni.cz/${FNUM}/${VID}.mp4
+        if [ $? != 0 ]; then
+                        echo "Video na zadanem URL nebylo nalezeno"
+                else
+                #nejdrive titulky, pak video
+                #pokud existuji titulky, stahneme
+                wget --no-check-certificate --spider https://koukni.cz/SRT/${VID}.srt -q
+                if [ $? -eq 0 ]; then
+                        wget --no-check-certificate https://koukni.cz/SRT/${VID}.srt -O ./${ONAME}.srt
+                fi
+                #stahneme video
+                wget --no-check-certificate https://koukni.cz/${FNUM}/${VID}.mp4 -O ./${ONAME}.mp4
+        fi
+}
+
+function getName {
+###Argumentem je puvodni url odkazu napriklad https://koukni.cz/14815418
+        #GET video name from webpage
+        NURL="${1}"
+        ONAME=`wget --no-check-certificate -q ${NURL} -O -|egrep "*<title>.*</title>"|sed 's/<\/title>//'|awk -F'.CZ - ' '{print $2}'|sed -e 's/\s/./g'`
+        echo ${ONAME}
+}
+
+
+
+
+#####START SKRIPTU
+
+if [ ${1} == "h" ]; then
+
+        echo "Zadejte hledany vyraz:"
+        read H
+        hledani ${H}
+        exit
+
+fi
+
 if [ -z ${1} ];then
         echo "Zadejte cestu k videu (napr. https://koukni.cz/12356453)"
         read URL
@@ -10,30 +80,4 @@ fi
 
 #GET video number ID
 VID=`echo ${URL}|awk -F/ '{print $4}'`
-#GET first number in videos
-FNUM=`echo ${VID}|cut -c1-1`
-#GET video name from webpage
-ONAME=`wget --no-check-certificate -q ${URL} -O -|egrep "*<title>.*</title>"|sed 's/<\/title>//'|awk -F'.CZ - ' '{print $2}'|sed -e 's/\s/./g'`
-
-
-echo "Ulozit jako[${ONAME}]:"
-read USERIN
-if [ ! -z "${USERIN}" ];then
-        ONAME="${USERIN}"
-fi
-
-#stahneme zadane video
-wget --no-check-certificate --spider -q https://koukni.cz/${FNUM}/${VID}.mp4
-if [ $? != 0 ]; then
-        echo "Video na zadanem URL nebylo nalezeno"                                                                                                                
-else     
-        #nejdrive titulky, pak video                                                                                                                                                          
-        #pokud existuji titulky, stahneme                                                                                                                          
-        wget --no-check-certificate --spider https://koukni.cz/SRT/${VID}.srt -q                                                                                                          
-        if [ $? -eq 0 ]; then                                                                                                                                     
-                wget --no-check-certificate https://koukni.cz/SRT/${VID}.srt -O ./${ONAME}.srt
-        fi
-        #stahneme video
-        wget --no-check-certificate https://koukni.cz/${FNUM}/${VID}.mp4 -O ./${ONAME}.mp4                                                                                                
-
-fi
+stahnifilm ${VID}
